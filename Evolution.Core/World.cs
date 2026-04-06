@@ -19,6 +19,7 @@ namespace Evolution.Core
         public World()
         {
             map = new Entity[width, height];
+            _creatures = new List<Creature>();
 
             // Заполняем границы в ширину
             for (int i = 0; i < width; i++)
@@ -35,24 +36,100 @@ namespace Evolution.Core
             }
 
             // Генерируем случайным образом объекты еды на карте
-            SpawnObjects<Food>(0.05);
+            SpawnFood(0.05);
 
             // Генерируем сущности
-            SpawnObjects<Creature>(0.03);
+            SpawnCreatures(10);
             
         }
 
-        private void SpawnObjects<T>(double chance) where T : Entity, new()
+        private void SpawnFood(double chance)
         {
             for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < height; j++)
                 {
-                    if (map[i, j] == null)
+                    if (map[i, j] == null && random.NextDouble() < chance)
                     {
-                        map[i, j] = random.NextDouble() < chance ? new T() : null;
+                        map[i, j] = new Food(i, j);
                     }
                 }
+            }
+        }
+
+        private void SpawnCreatures(int count)
+        {
+            int createdCount = 0;
+            Random random = new Random();
+
+            while (createdCount < count)
+            {
+                int randomX = random.Next(0, width);
+                int randomY = random.Next(0, height);
+
+                if (map[randomX, randomY] == null)
+                {
+                    Creature creature = new Creature(randomX, randomY);
+                    map[randomX, randomY] = creature;
+                    _creatures.Add(creature);
+                    createdCount++;
+                }
+                else
+                {
+                    if (createdCount >= width * height)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void MoveCreature()
+        {
+            foreach (Creature creature in _creatures)
+            {
+                Direction action = creature.motion;
+
+                var (x, y) = (creature.X, creature.Y);
+                var (newX, newY) = NewCoordinates(action, creature.step, creature.X, creature.Y);
+
+                if (newX >= 0 && newY >= 0 && newX < map.GetLength(0) && newY < map.GetLength(1))
+                {
+                    if (map[newX, newY] == null)
+                    {
+                        map[x, y] = null;
+                        map[newX, newY] = creature;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"New coordinates ({newX}, {newY}) are out of bounds.");
+                }
+            }
+        }
+
+        public (int x, int y) NewCoordinates(Direction dir, int step, int x, int y)
+        {
+            switch (dir)
+            {
+                case Direction.Up:
+                    return (x, y + 1);
+                case Direction.Down:
+                    return (x, y - 1);
+                case Direction.Right:
+                    return (x + 1, y);
+                case Direction.Left:
+                    return (x - 1, y);
+                case Direction.Up_Right:
+                    return (x + 1, y + 1);
+                case Direction.Up_Left:
+                    return (x - 1, y + 1);
+                case Direction.Down_Right:
+                    return (x + 1, y - 1);
+                case Direction.Down_Left:
+                    return (x + - 1, y - 1);
+                default:
+                    throw new Exception("Error: the motion vector is not recognized");
             }
         }
 
@@ -62,7 +139,7 @@ namespace Evolution.Core
             {
                 for (int j = 0; j < width; j++)
                 {
-                    if (map[i, j] != null) // Проверяем, что карта не пустая
+                    if (map[i, j] != null)
                     {
                         Console.Write(map[i, j].Symbol + " ");
                     }

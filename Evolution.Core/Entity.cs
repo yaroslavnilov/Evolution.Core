@@ -8,8 +8,10 @@ namespace Evolution.Core
 {
     public class Entity
     {
-        protected int x, y;
         protected bool IsPassable;
         public char Symbol { get; protected set; }
+        public int X { get; internal set; }
+        public int Y { get; internal set; }
+        public int step { get; protected set; }
     }
 }

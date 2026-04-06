@@ -8,10 +8,19 @@ namespace Evolution.Core
 {
     class Creature : Entity
     {
-        public Creature()
+        public Direction motion;
+
+        public Creature(int x, int y)
         {
             Symbol = 'B';
+            step = 1;
+            X = x;
+            Y = y;
         }
+
+
+
+        
 
     }
 }

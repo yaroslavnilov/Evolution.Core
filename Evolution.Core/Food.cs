@@ -10,9 +10,11 @@ namespace Evolution.Core
     {
         private int EnergyValue;
 
-        public Food()
+        public Food(int x, int y)
         {
             Symbol = '*';
+            X = x;
+            Y = y;
         }
     }
 }
